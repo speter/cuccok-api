@@ -22,16 +22,24 @@ public class JsonCuccRepo implements CuccRepo {
 		this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	}
 
-	@Override
-	public synchronized List<Cucc> getAll() throws Exception {
+	private List<Cucc> readRepo() throws Exception {
 		return objectMapper.readValue(new File(REPO_PATH), new TypeReference<List<Cucc>>() {
 		});
+	}
+
+	private void writeRepo(List<Cucc> cuccok) throws Exception {
+		objectMapper.writeValue(new File(REPO_PATH), cuccok);
+	}
+
+	@Override
+	public synchronized List<Cucc> getAll() throws Exception {
+		return readRepo();
 	}
 
 	@Override
 	public synchronized Cucc get(UUID id) throws Exception {
 		Preconditions.checkArgument(id != null, "UUID mustn't be null");
-		List<Cucc> cuccok = objectMapper.readValue(new File(REPO_PATH), new TypeReference<List<Cucc>>() {});
+		List<Cucc> cuccok = readRepo();
 		for (Cucc c : cuccok) {
 			if (id.equals(c.id)) {
 				return c;
@@ -46,10 +54,9 @@ public class JsonCuccRepo implements CuccRepo {
 		Preconditions.checkArgument(c.id == null, "Cucc mustn't have an id");
 		UUID uuid = UUID.randomUUID();
 		c.id = uuid;
-		List<Cucc> cuccok = objectMapper.readValue(new File(REPO_PATH), new TypeReference<List<Cucc>>() {
-		});
+		List<Cucc> cuccok = readRepo();
 		cuccok.add(c);
-		objectMapper.writeValue(new File(REPO_PATH), cuccok);
+		writeRepo(cuccok);
 		return uuid;
 	}
 
@@ -57,8 +64,7 @@ public class JsonCuccRepo implements CuccRepo {
 	public synchronized boolean update(Cucc c) throws Exception {
 		Preconditions.checkArgument(c != null, "Cucc mustn't be null");
 		Preconditions.checkArgument(c.id != null, "Cucc must have an id");
-		List<Cucc> cuccok = objectMapper.readValue(new File(REPO_PATH), new TypeReference<List<Cucc>>() {
-		});
+		List<Cucc> cuccok = readRepo();
 		boolean updated = false;
 		for (int i = 0; i < cuccok.size(); i++) {
 			if (c.id.equals(cuccok.get(i).id)) {
@@ -68,7 +74,7 @@ public class JsonCuccRepo implements CuccRepo {
 			}
 		}
 		if (updated) {
-			objectMapper.writeValue(new File(REPO_PATH), cuccok);
+			writeRepo(cuccok);
 		}
 		return updated;
 
@@ -77,8 +83,7 @@ public class JsonCuccRepo implements CuccRepo {
 	@Override
 	public synchronized boolean delete(UUID id) throws Exception {
 		Preconditions.checkArgument(id != null, "UUID mustn't be null");
-		List<Cucc> cuccok = objectMapper.readValue(new File(REPO_PATH), new TypeReference<List<Cucc>>() {
-		});
+		List<Cucc> cuccok = readRepo();
 		boolean deleted = false;
 		for (int i = 0; i < cuccok.size(); i++) {
 			if (id.equals(cuccok.get(i).id)) {
@@ -88,7 +93,7 @@ public class JsonCuccRepo implements CuccRepo {
 			}
 		}
 		if (deleted) {
-			objectMapper.writeValue(new File(REPO_PATH), cuccok);
+			writeRepo(cuccok);
 		}
 		return deleted;
 	}
